@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projeto Abigail</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+  }
+
+  .menu-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  #menuVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+  }
+
+  .menu-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: white;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .menu-content h1 {
+    font-size: 4rem;
+    margin-bottom: 40px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    animation: fadeIn 2s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .play-button {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: #ffcc00;
+    color: #000;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s, transform 0.2s;
+    cursor: pointer;
+  }
+
+  .play-button:hover {
+    background-color: #e6b800;
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+  <div class="menu-container" id="menuContainer">
+    <video id="menuVideo" autoplay muted loop>
+      <source src="C:\Users\moise\OneDrive\Desktop\projeto_abigail_html_puro\videos\menu_video.webm" type="video/webm">
+      Seu navegador não suporta vídeos em WebM.
+    </video>
+    
+    <div class="menu-content">
+      <h1>Projeto Abigail</h1>
+      <button class="play-button" id="playButton">JOGAR</button>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('menuVideo');
+    const container = document.getElementById('menuContainer');
+
+    container.addEventListener('click', () => {
+      video.muted = false;
+      video.play().catch((error) => {
+        console.log('O navegador bloqueou a reprodução automática com som:', error);
+      });
+    });
+
+    document.getElementById('playButton').addEventListener('click', (e) => {
+      e.stopPropagation(); // Evita que o clique no botão afete o vídeo
+      window.location.href = "jogo.html"; // Abre o jogo!
+    });
+  </script>
+</body>
+</html>
