@@ -1,17 +1,538 @@
-<!DOCTYPE>: Marca que tipo de documento está sendo escrito.
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto Abigail</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Roboto:wght@400;700&display=swap');
 
-<html> </html>: Envolve todo o documento html
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #000;
+            color: #fff;
+            height: 100%;
+            overflow: hidden; /* Garante que não haja barras de rolagem */
+        }
 
-<head> </head>: É a “cabeça” do documento. O que estive aqui, não será visível para os visitantes de sua página.
+        /* Container principal do Jogo */
+        #game {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transition: background-image 0.5s ease; /* Suaviza a troca de imagem de fundo */
+            z-index: 1; 
+        }
 
-<title> </title>: É o título do seu documento, que ficará visível na aba do navegador. Ele é diferente do título da sua página.
+        #dialogue-box {
+            width: 90%;
+            max-width: 700px;
+            margin: 0 auto 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+        }
 
-<body> </body>: É o corpo do documento. Aqui é onde fica toda a estrutura de sua página, como títulos, legendas, imagens, links, etc.
+        #character-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ff4444;
+            font-size: 1.2em;
+        }
 
-<h1> </h1> até </h6>: São marcações de título de uma página, por ordem de relevância. H1 é o título principal da página.
+        #dialogue-text {
+            margin-bottom: 10px;
+            cursor: pointer; /* Indica que o texto é clicável para avançar */
+        }
 
-<p> </p>: é um parágrafo, onde fica o conteúdo de sua página.
+        #choices {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-<br>: Uma q uebra de linha, que não precisa de tag de fechamento.
+        .choice {
+            background: #333;
+            border: none;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
-<!– –> <!– –>: É a sintaxe de um comentário no seu código, que pode ser utilizada para explicar o seu código. O texto dentro dessa tag não será visível para o usuário.
+        .choice:hover {
+            background: #555;
+        }
+
+        #character-image {
+            position: absolute;
+            bottom: 120px;
+            right: 20px;
+            height: 300px;
+            max-width: 30%;
+            transition: opacity 0.5s ease;
+            border-radius: 5px;
+        }
+
+        #restart-button {
+            background: #ff4444;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        #restart-button:hover {
+            background: #cc3333;
+        }
+
+        .ending-text {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 50px;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            #dialogue-box {
+                width: 95%;
+                margin-bottom: 10px;
+                padding: 10px;
+            }
+            #character-image {
+                height: 200px;
+                bottom: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #character-image {
+                height: 150px;
+                bottom: 60px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <img id="character-image" src="" alt="" style="opacity: 0;">
+        <div id="dialogue-box">
+            <div id="character-name"></div>
+            <div id="dialogue-text"></div>
+            <div id="choices"></div>
+            <button id="restart-button" style="display: none;">Reiniciar Jogo</button>
+        </div>
+    </div>
+
+    <script>
+        const scenes = [
+            { // 0
+                background: 'url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBpo6UOnKXwE0BIEuKPGvAvgvgLgt0Sg1MeQ&s")', // Floresta
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Erivelton, você ouviu isso?',
+                choices: []
+            },
+            { // 1
+                background: 'url("https://cdn.pixabay.com/photo/2016/11/29/09/08/dark-1868687_1280.jpg")', // Casa escura/corredor
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'Ouvi sim... acho que vem do porão.',
+                choices: [
+                    { text: 'Vamos ver o que é.', next: 2 },
+                    { text: 'Melhor não irmos lá.', next: 3 }
+                ]
+            },
+            { // 2 - Escolha: Vamos ver o que é.
+                background: 'url("https://cdn.pixabay.com/photo/2015/12/01/20/28/dark-1078806_1280.jpg")', // Porão escuro
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Ok... mas tome cuidado! Há algo estranho aqui.',
+                choices: [
+                    { text: 'Procurar uma fonte de luz.', next: 4 },
+                    { text: 'Continuar em frente no escuro.', next: 5 }
+                ]
+            },
+            { // 3 - Escolha: Melhor não irmos lá.
+                background: 'url("https://cdn.pixabay.com/photo/2017/08/06/00/32/dark-2584794_1280.jpg")', // Sala mais iluminada, mas ainda sombria
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'Concordo, é melhor evitar problemas. Vamos para a sala principal.',
+                choices: [
+                    { text: 'Ir para a sala principal.', next: 11 }
+                ]
+            },
+            { // 4 - Escolha: Procurar uma fonte de luz.
+                background: 'url("https://cdn.pixabay.com/photo/2017/12/10/01/17/lamp-3009587_1280.jpg")', // Lanterna na mão / Luz fraca
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Achei uma lanterna velha! Pelo menos temos alguma visibilidade agora.',
+                choices: [
+                    { text: 'Seguir o som do porão com a lanterna.', next: 6 },
+                    { text: 'Tentar encontrar uma saída.', next: 7 }
+                ]
+            },
+            { // 5 - Escolha: Continuar em frente no escuro.
+                background: 'url("https://cdn.pixabay.com/photo/2015/09/09/16/25/dark-931221_1280.jpg")', // Escuridão total
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'É muito escuro! Mal consigo ver um palmo à frente. Um vulto passou por nós!',
+                choices: [
+                    { text: 'Ligar a lanterna do celular.', next: 8 },
+                    { text: 'Correr de volta.', next: 9 }
+                ]
+            },
+            { // 6 - Escolha: Seguir o som do porão com a lanterna.
+                background: 'url("https://cdn.pixabay.com/photo/2018/02/14/13/04/fear-3158262_1280.jpg")', // Algo assustador / Monstro à espreita
+                character: 'Projeto Abigail',
+                image: '',
+                dialogue: 'VOCÊS NÃO DEVERIAM TER VINDO AQUI...',
+                choices: [
+                    { text: 'Correr!', next: 10 },
+                    { text: 'Enfrentar.', next: 15 }
+                ]
+            },
+            { // 7 - Escolha: Tentar encontrar uma saída.
+                background: 'url("https://cdn.pixabay.com/photo/2016/06/17/04/46/door-1462413_1280.jpg")', // Porta trancada / Janela
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Não parece ter uma saída fácil por aqui. As janelas estão trancadas.',
+                choices: [
+                    { text: 'Procurar por outra rota.', next: 12 },
+                    { text: 'Desistir e esperar ajuda.', next: 13 }
+                ]
+            },
+            { // 8 - Escolha: Ligar a lanterna do celular.
+                background: 'url("https://cdn.pixabay.com/photo/2016/08/17/05/20/shadow-1599351_1280.jpg")', // Sombra na parede / Algo oculto
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'A luz do celular é fraca, mas revelou algo horrível no canto da sala!',
+                choices: [
+                    { text: 'Investigar o que viu.', next: 14 },
+                    { text: 'Fingir que não viu e tentar sair.', next: 10 }
+                ]
+            },
+            { // 9 - Escolha: Correr de volta.
+                background: 'url("https://cdn.pixabay.com/photo/2017/08/01/05/30/scary-2568397_1280.jpg")', // Correndo por um corredor escuro
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Rápido, vamos sair daqui! O que quer que seja, está nos seguindo!',
+                choices: [
+                    { text: 'Tentar abrir a porta principal.', next: 16 },
+                    { text: 'Se esconder no armário.', next: 17 }
+                ]
+            },
+            { // 10 - Escolha: Correr! (Cena comum de fuga)
+                background: 'url("https://cdn.pixabay.com/photo/2017/08/01/05/30/scary-2568397_1280.jpg")', // Fuga desesperada
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Rápido, vamos sair daqui!',
+                choices: [
+                    { text: 'Pegar a lanterna e fugir.', next: 18 },
+                    { text: 'Se esconder no porão.', next: 19 }
+                ]
+            },
+            { // 11 - Nova Cena: Sala principal (ramificação da cena 3)
+                background: 'url("https://cdn.pixabay.com/photo/2016/11/18/13/23/light-1836069_1280.jpg")', // Sala principal
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'Ufa, aqui parece mais seguro. Mas ainda sinto algo errado.',
+                choices: [
+                    { text: 'Tentar ligar as luzes.', next: 20 },
+                    { text: 'Verificar as saídas de emergência.', next: 21 }
+                ]
+            },
+            { // 12 - Nova Cena: Procurar por outra rota.
+                background: 'url("https://cdn.pixabay.com/photo/2017/03/06/13/11/alley-2121175_1280.jpg")', // Corredor/beco
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Encontramos um corredor escuro, parece levar a um outro lado da casa.',
+                choices: [
+                    { text: 'Explorar o corredor.', next: 22 },
+                    { text: 'Voltar para a sala principal.', next: 11 }
+                ]
+            },
+            { // 13 - Final 1: Desistir e esperar ajuda. (Game Over)
+                background: 'url("https://cdn.pixabay.com/photo/2017/03/17/05/01/dark-2150993_1280.jpg")', // Escuridão total / Sentimento de desamparo
+                character: '',
+                image: '',
+                dialogue: 'A espera foi longa e silenciosa. O monstro os encontrou na escuridão. Fim.',
+                choices: []
+            },
+            { // 14 - Nova Cena: Investigar o que viu.
+                background: 'url("https://cdn.pixabay.com/photo/2018/01/29/14/06/horror-3116172_1280.jpg")', // Rosto de monstro / Algo aterrorizante
+                character: 'Projeto Abigail',
+                image: '',
+                dialogue: 'Um erro fatal. Agora vocês verão minha verdadeira forma!',
+                choices: []
+            },
+            { // 15 - Nova Cena: Enfrentar (decisão de confronto).
+                background: 'url("https://cdn.pixabay.com/photo/2019/10/13/17/01/monster-4546475_1280.jpg")', // Monstro de frente
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'Eu... eu não vou deixar você nos pegar!',
+                choices: [
+                    { text: 'Usar arma improvisada.', next: 23 },
+                    { text: 'Gritar por ajuda.', next: 24 }
+                ]
+            },
+            { // 16 - Nova Cena: Tentar abrir a porta principal.
+                background: 'url("https://cdn.pixabay.com/photo/2017/03/24/16/09/door-2171120_1280.jpg")', // Porta antiga
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'A porta está emperrada! Precisamos de algo para forçá-la!',
+                choices: [
+                    { text: 'Chutar a porta.', next: 25 },
+                    { text: 'Procurar uma ferramenta.', next: 26 }
+                ]
+            },
+            { // 17 - Final 2: Se esconder no armário. (Game Over)
+                background: 'url("https://cdn.pixabay.com/photo/2017/02/09/21/04/closet-2053641_1280.jpg")', // Interior de um armário escuro
+                character: '',
+                image: '',
+                dialogue: 'Vocês se apertaram no escuro do armário, mas o cheiro do medo os denunciou. Fim.',
+                choices: []
+            },
+            { // 18 - Final 3: Pegar a lanterna e fugir. (Final Bom)
+                background: 'url("https://cdn.pixabay.com/photo/2020/10/01/16/57/escape-5616020_1280.jpg")', // Caminho para a liberdade / Floresta de dia
+                character: '',
+                image: '',
+                dialogue: '<span class="ending-text">FINAL BOM: Vocês conseguiram escapar, mas o grito do monstro ainda ecoa em suas mentes... A liberdade tem seu preço.</span>',
+                choices: []
+            },
+            { // 19 - Final 4: Se esconder no porão. (Game Over)
+                background: 'url("https://cdn.pixabay.com/photo/2019/03/09/05/54/ghost-4041032_1280.jpg")', // Porão assustador / Fantasma
+                character: 'Projeto Abigail',
+                image: '',
+                dialogue: 'Não adianta se esconder... O porão se tornou sua tumba.',
+                choices: []
+            },
+            { // 20 - Nova Cena: Tentar ligar as luzes.
+                background: 'url("https://cdn.pixabay.com/photo/2017/02/03/06/07/switch-2033878_1280.jpg")', // Interruptor de luz
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'O interruptor não funciona! A eletricidade deve ter sido cortada.',
+                choices: [
+                    { text: 'Procurar por velas.', next: 27 },
+                    { text: 'Voltar a investigar o porão.', next: 2 }
+                ]
+            },
+            { // 21 - Nova Cena: Verificar as saídas de emergência.
+                background: 'url("https://cdn.pixabay.com/photo/2018/08/06/16/36/door-3588147_1280.jpg")', // Porta de saída de emergência
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'As saídas de emergência estão todas trancadas por fora. Parece que fomos encurralados.',
+                choices: [
+                    { text: 'Chamar a polícia.', next: 28 },
+                    { text: 'Esconder e esperar.', next: 13 }
+                ]
+            },
+            { // 22 - Nova Cena: Explorar o corredor.
+                background: 'url("https://cdn.pixabay.com/photo/2017/05/27/15/41/corridor-2348574_1280.jpg")', // Corredor longo e vazio
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'Este corredor é longo e empoeirado... sinto uma brisa gelada vindo do fundo.',
+                choices: [
+                    { text: 'Seguir a brisa.', next: 29 },
+                    { text: 'Retornar para a sala principal.', next: 11 }
+                ]
+            },
+            { // 23 - Final 5: Usar arma improvisada. (Final de Vitória)
+                background: 'url("https://cdn.pixabay.com/photo/2016/09/18/22/56/horror-1674129_1280.jpg")', // Arma improvisada / Luta
+                character: '',
+                image: '',
+                dialogue: '<span class="ending-text">FINAL DE VITÓRIA: Com coragem e sorte, vocês usaram uma arma improvisada e, por um milagre, derrotaram o monstro e sobreviveram.</span>',
+                choices: []
+            },
+            { // 24 - Final 6: Gritar por ajuda. (Game Over)
+                background: 'url("https://cdn.pixabay.com/photo/2019/03/04/06/48/horror-4034125_1280.jpg")', // Rosto aterrorizado / Boca gritando
+                character: '',
+                image: '',
+                dialogue: 'O silêncio foi sua sentença. Seus gritos ecoaram, mas ninguém veio. Vocês foram levados para sempre...',
+                choices: []
+            },
+            { // 25 - Nova Cena: Chutar a porta.
+                background: 'url("https://cdn.pixabay.com/photo/2016/04/01/18/59/door-1301017_1280.jpg")', // Porta arrombada
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'A porta cedeu com um estrondo! Mas o barulho pode ter atraído a criatura.',
+                choices: [
+                    { text: 'Correr para fora.', next: 18 },
+                    { text: 'Olhar para trás antes de sair.', next: 30 }
+                ]
+            },
+            { // 26 - Nova Cena: Procurar uma ferramenta.
+                background: 'url("https://cdn.pixabay.com/photo/2017/03/03/17/08/wrench-2114781_1280.jpg")', // Pé de cabra / Ferramenta
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'Encontrei um pé de cabra! Deve servir para arrombar a porta.',
+                choices: [
+                    { text: 'Arrombar a porta.', next: 18 },
+                    { text: 'Usar o pé de cabra como arma.', next: 23 }
+                ]
+            },
+            { // 27 - Nova Cena: Procurar por velas.
+                background: 'url("https://cdn.pixabay.com/photo/2017/08/17/14/01/candle-2651111_1280.jpg")', // Velas acesas / Escuridão com pontos de luz
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'Achei algumas velas e fósforos. A luz é fraca, mas é melhor que nada.',
+                choices: [
+                    { text: 'Continuar explorando com a vela.', next: 6 },
+                    { text: 'Ficar na sala com a vela acesa.', next: 13 }
+                ]
+            },
+            { // 28 - Nova Cena: Chamar a polícia.
+                background: 'url("https://cdn.pixabay.com/photo/2017/07/26/12/32/police-2541334_1280.jpg")', // Telefone sem sinal / Antena
+                character: 'Erivelton',
+                image: '',
+                dialogue: 'Meu celular está sem sinal! Estamos presos e incomunicáveis.',
+                choices: [
+                    { text: 'Entrar em pânico.', next: 31 },
+                    { text: 'Manter a calma e procurar outra solução.', next: 12 }
+                ]
+            },
+            { // 29 - Nova Cena: Seguir a brisa.
+                background: 'url("https://cdn.pixabay.com/photo/2016/01/19/17/46/wind-1149454_1280.jpg")', // Vento soprando / Fresta na parede
+                character: 'Gabriel',
+                image: '',
+                dialogue: 'A brisa leva a uma pequena fresta na parede. Parece que dá para o lado de fora!',
+                choices: [
+                    { text: 'Tentar espremer-se pela fresta.', next: 18 },
+                    { text: 'A fresta é muito pequena, desistir.', next: 11 }
+                ]
+            },
+            { // 30 - Final 7: Olhar para trás antes de sair. (Game Over)
+                background: 'url("https://cdn.pixabay.com/photo/2018/02/14/13/04/fear-3158262_1280.jpg")', // Monstro aparecendo na porta
+                character: 'Projeto Abigail',
+                image: '',
+                dialogue: 'Um último olhar foi tudo o que vocês precisaram para ver seu fim. A criatura os alcançou antes que pudessem fugir.',
+                choices: []
+            },
+            { // 31 - Final 8: Entrar em pânico. (Game Over)
+                background: 'url("https://cdn.pixabay.com/photo/2016/11/29/05/45/girl-1868494_1280.jpg")', // Pessoa em pânico / Rosto assustado
+                character: '',
+                image: '',
+                dialogue: 'O pânico consumiu vocês. Incapazes de pensar, tornaram-se presas fáceis. Fim.',
+                choices: []
+            },
+            // --- CENA DE GAME OVER FINAL ---
+            { // 32 (scenes.length - 1)
+                background: 'url("https://cdn.pixabay.com/photo/2017/02/13/21/20/game-over-2064115_1280.jpg")', // Tela de Game Over
+                character: 'Fim de Jogo',
+                image: '',
+                dialogue: '<span class="ending-text">**GAME OVER**<br><br>Suas escolhas levaram a um destino sombrio. Tente novamente!</span>',
+                choices: []
+            }
+        ];
+
+        let currentScene = 0;
+        let audioActivated = false; // Flag para controlar a ativação do áudio
+
+        const game = document.getElementById('game');
+        const characterName = document.getElementById('character-name');
+        const dialogueText = document.getElementById('dialogue-text');
+        const choicesDiv = document.getElementById('choices');
+        const characterImage = document.getElementById('character-image');
+        const restartButton = document.getElementById('restart-button');
+        const videoBackground = document.getElementById('video-background'); // Adicionado o vídeo de fundo
+
+        function showScene(index) {
+            const scene = scenes[index];
+            currentScene = index;
+
+            // Define a imagem de fundo da cena
+            game.style.backgroundImage = scene.background;
+            
+            characterName.textContent = scene.character;
+            dialogueText.innerHTML = scene.dialogue;
+
+            if (scene.image) {
+                characterImage.src = scene.image;
+                characterImage.style.opacity = 1;
+            } else {
+                characterImage.style.opacity = 0;
+            }
+
+            choicesDiv.innerHTML = '';
+            restartButton.style.display = 'none';
+
+            if (scene.choices && scene.choices.length > 0) {
+                scene.choices.forEach(choice => {
+                    const btn = document.createElement('button');
+                    btn.textContent = choice.text;
+                    btn.classList.add('choice');
+                    btn.onclick = () => showScene(choice.next);
+                    choicesDiv.appendChild(btn);
+                });
+                dialogueText.onclick = null; // Não avança o diálogo ao clicar no texto se houver escolhas
+            } else {
+                // Se for um final (Game Over ou Final Bom/Vitória), mostra o botão de reiniciar
+                const isGameOverOrGoodEnding = (currentScene === scenes.length - 1) || (currentScene === 18) || (currentScene === 23);
+                
+                if (isGameOverOrGoodEnding) {
+                    restartButton.style.display = 'block';
+                    dialogueText.onclick = null; // Não avança mais o diálogo
+                } else if (currentScene + 1 < scenes.length) {
+                    // Se não for um final e houver uma próxima cena, avança ao clique no texto
+                    dialogueText.onclick = () => showScene(currentScene + 1);
+                } else {
+                    // Caso para cenários que chegam ao fim sem ser um Game Over explícito ou bom.
+                    dialogueText.onclick = null;
+                }
+            }
+        }
+
+        function restartGame() {
+            // Volta o vídeo a ser mutado ao reiniciar o jogo
+            videoBackground.muted = true;
+            audioActivated = false; // Reseta a flag de áudio
+            showScene(0); // Inicia da primeira cena
+        }
+
+        restartButton.onclick = restartGame;
+
+        // --- REVISÃO DOS REDIRECIONAMENTOS PARA FINAIS ESPECÍFICOS E GAME OVER ---
+        // Certifica-se que os finais sem choices levem ao Game Over padrão (cena 32)
+        // Cenas que levam a Game Over se não tiverem escolhas ou se a escolha levar a um fim:
+        scenes[13].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
+        scenes[14].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
+        scenes[17].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
+        scenes[19].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
+        scenes[24].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
+        scenes[30].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
+        scenes[31].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
+
+        // Lógica para ativar o áudio no primeiro clique em qualquer lugar da caixa de diálogo
+        dialogueText.addEventListener('click', () => {
+            if (!audioActivated) {
+                videoBackground.muted = false;
+                videoBackground.play().then(() => {
+                    console.log("Áudio ativado!");
+                    audioActivated = true;
+                }).catch(error => {
+                    console.error("Erro ao ativar áudio:", error);
+                    videoBackground.muted = true; // Permanece mutado se houver erro
+                });
+            }
+        });
+
+        // Inicia o jogo na primeira cena assim que o DOM for carregado
+        showScene(0);
+    </script>
+</body>
+</html>
