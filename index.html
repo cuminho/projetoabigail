@@ -21,7 +21,6 @@
     width: 100%;
     height: 100vh;
     overflow: hidden;
-    cursor: pointer;
   }
 
   #menuVideo {
@@ -75,12 +74,60 @@
     background-color: #e6b800;
     transform: scale(1.05);
   }
+
+  /* Janela flutuante profissional */
+  .sound-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff; /* fundo totalmente branco */
+    color: #000000; /* texto preto para contraste */
+    border-radius: 10px;
+    padding: 25px 40px;
+    text-align: center;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* sombra sutil */
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .sound-popup img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+  }
+
+  .sound-popup p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .sound-popup button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #ffcc00;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  .sound-popup button:hover {
+    background-color: #e6b800;
+    transform: scale(1.05);
+  }
 </style>
 </head>
 <body>
-  <div class="menu-container" id="menuContainer">
+  <div class="menu-container">
     <video id="menuVideo" autoplay muted loop>
-     <source src="videos/menu_video.webm" type="video/webm">
+      <source src="videos/menu_video.webm" type="video/webm">
       Seu navegador não suporta vídeos em WebM.
     </video>
     
@@ -90,20 +137,32 @@
     </div>
   </div>
 
+  <!-- Janela flutuante -->
+  <div class="sound-popup" id="soundPopup">
+    <img src="imagens/fone_de_ouvido.png" alt="Fone de ouvido">
+    <p>Ligue o som para uma experiência completa</p>
+    <button id="enableSoundButton">Ligar som</button>
+  </div>
+
   <script>
     const video = document.getElementById('menuVideo');
-    const container = document.getElementById('menuContainer');
+    const playButton = document.getElementById('playButton');
+    const soundPopup = document.getElementById('soundPopup');
+    const enableSoundButton = document.getElementById('enableSoundButton');
 
-    container.addEventListener('click', () => {
+    // Clique no botão "Ligar som"
+    enableSoundButton.addEventListener('click', () => {
       video.muted = false;
       video.play().catch((error) => {
         console.log('O navegador bloqueou a reprodução automática com som:', error);
       });
+      soundPopup.style.display = 'none'; // Oculta a janela flutuante
     });
 
-    document.getElementById('playButton').addEventListener('click', (e) => {
-      e.stopPropagation(); // Evita que o clique no botão afete o vídeo
-      window.location.href = "jogo.html"; // Abre o jogo!
+    // Botão JOGAR
+    playButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.href = "jogo.html";
     });
   </script>
 </body>
