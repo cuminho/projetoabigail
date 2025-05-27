@@ -448,8 +448,7 @@
         const dialogueText = document.getElementById('dialogue-text');
         const choicesDiv = document.getElementById('choices');
         const characterImage = document.getElementById('character-image');
-        const restartButton = document.getElementById('restart-button');
-        const videoBackground = document.getElementById('video-background'); // Adicionado o vídeo de fundo
+        const restartButton = document.getElementById('restart-button')
 
         function showScene(index) {
             const scene = scenes[index];
@@ -499,7 +498,6 @@
 
         function restartGame() {
             // Volta o vídeo a ser mutado ao reiniciar o jogo
-            videoBackground.muted = true;
             audioActivated = false; // Reseta a flag de áudio
             showScene(0); // Inicia da primeira cena
         }
@@ -516,20 +514,6 @@
         scenes[24].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
         scenes[30].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
         scenes[31].choices = [{ text: 'Recomeçar.', next: scenes.length - 1 }];
-
-        // Lógica para ativar o áudio no primeiro clique em qualquer lugar da caixa de diálogo
-        dialogueText.addEventListener('click', () => {
-            if (!audioActivated) {
-                videoBackground.muted = false;
-                videoBackground.play().then(() => {
-                    console.log("Áudio ativado!");
-                    audioActivated = true;
-                }).catch(error => {
-                    console.error("Erro ao ativar áudio:", error);
-                    videoBackground.muted = true; // Permanece mutado se houver erro
-                });
-            }
-        });
 
         // Inicia o jogo na primeira cena assim que o DOM for carregado
         showScene(0);
